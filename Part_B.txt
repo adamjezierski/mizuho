@@ -1,0 +1,68 @@
+What can be done better:
+
+	Order:
+	
+		Order class - Should be entity and should be stored into database, even H2 etc. It will make life much easier :)
+		
+		id  
+			- Should be generated automatically. By SequenceGenerator (for database) or UUID.randomUUID() or even by some AtomicLong (in case of multi-thread)
+			- Should be final, and generated in constructor
+		price 
+			- should be BigDecimal to store prices
+			- If we want to support currencies then we can use Currency class from Java or some external like org.javamoney.moneta
+			- Should be final as we don't want to modify it.
+			- Added @NotNull if will be Object type
+		side 
+			- Should be enum with two values B ("Bid") and O("Offer") (!)
+			- Should be final as we don't want to modify it
+		size 
+			- Normaly fine, but can be considered to use BigInteger etc.
+			- Should have setter in order to modify it
+			- Added @NotNull if will be Object type
+			
+		This class also should have compareTo method implemented - To compare and find objects
+		
+		This class should have also toString method implemented / or have json annotation for easy presenting if needed.
+		
+
+	OrderBook:
+	
+		orders var
+			- When Order object will be entity with table on datbase then this object won't be needed and instead of we can fetch and save data to database by using for example JPA etc.
+			+ TreeMap gives us sorting, LinkedHashSet keep order
+		
+		addOrder
+			- If 'side' will be enum there is no need to check if value is correct
+			- If there is unique id, then method 'checkIfOrderWithSuchIdExists' call was not needed.
+			- We can consider return false / log error instead of throwing exception - depends on functionality.
+			
+		checkIfOrderWithSuchIdExists
+			- If there is unique id, then method 'checkIfOrderWithSuchIdExists' was not needed.
+			
+		removeOrder
+			- If we have database then we don't need to iterate on map inside map, but just call remove by ID and voila
+			
+		updateOrder
+			- Also simple update on table will make difference here (!)
+			- Without setter, to avoid create new object I use reflection, but it's not perfect ofc.
+			
+		getPriceForLevel
+			- If 'side' will be enum there is no need to check if value is correct
+			- In this method I have decide to return Optional and then check ifPresent and get value. Can be changed to return null / '0.0' or even throw exception if not found.
+			
+		getTotalOrderSize
+			- If 'side' will be enum there is no need to check if value is correct
+		
+		validateIfLevelIsPositive
+			- Can use some annotation to validate level instead, or create own annotation especially I use it in few places. If it will be API then we can add some validation for it.
+
+		displayOrderMap
+			- If 'side' will be enum there is no need to check if value is correct
+			- It's to display 'human-readable' of orders. Can be with PrettyPrinting or without. I decide to return with, but it depends.
+			
+		getSortComparator
+			- If we have Enum instead of char, then we can simplfy this method like 'return side == Side.B ? Comparator.reverseOrder() : Comparator.naturalOrder();'
+			
+	OrderBookTest:
+		- There are tests with coverage of 97% (all except reflection exception) - probably not all cases, but most.
+			
